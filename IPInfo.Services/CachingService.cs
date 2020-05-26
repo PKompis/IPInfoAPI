@@ -1,4 +1,5 @@
 ﻿using IPInfo.Core.Services;
+using IPInfo.Services.Configuration;
 using System;
 using System.Runtime.Caching;
 
@@ -6,13 +7,13 @@ namespace IPInfo.Services
 {
     public class CachingService : ICachingService
     {
-        private readonly CacheItemPolicy _cacheItemPolicy;
         private MemoryCache _cache;
+        private readonly ExpirationConfiguration _expirationConfiguration;
 
-        public CachingService(CacheItemPolicy cacheItemPolicy)
+        public CachingService(ExpirationConfiguration expirationConfiguration)
         {
-            _cacheItemPolicy = cacheItemPolicy;
             _cache = new MemoryCache("IPInfoAPI");
+            _expirationConfiguration = expirationConfiguration;
         }
 
         public bool Add<T>(string key, T value, DateTimeOffset? expiration = null)
@@ -21,7 +22,7 @@ namespace IPInfo.Services
 
             if (expiration != null) cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = expiration.Value };
 
-            return _cache.Add(new CacheItem(key, value), cacheItemPolicy ?? _cacheItemPolicy);
+            return _cache.Add(new CacheItem(key, value), cacheItemPolicy ?? GetCacheItemPolicy());
         }
 
         public bool Contains(string key)
@@ -39,5 +40,9 @@ namespace IPInfo.Services
             var value = _cache.Get(key);
             return value is T obj ? obj : default;
         }
+        private CacheItemPolicy GetCacheItemPolicy() => new CacheItemPolicy
+        {
+            AbsoluteExpiration = DateTime.Now.AddMinutes(_expirationConfiguration.ExpirationMinutes.GetValueOrDefault())
+        };
     }
 }

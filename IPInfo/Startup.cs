@@ -17,6 +17,7 @@ using Hangfire;
 using Hangfire.SqlServer;
 using System;
 using System.Runtime.Caching;
+using IPInfo.Services.Configuration;
 
 namespace IPInfo
 {
@@ -39,7 +40,7 @@ namespace IPInfo
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddSingleton(new IPProviderConfiguration { APIRootUrl = Configuration.GetValue<string>("IPAPIRootUrl"), APIKey = Configuration.GetValue<string>("IPAPIKey") });
-            services.AddSingleton(new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(Configuration.GetValue<double>("CachingExpirationMinutes")) });
+            services.AddSingleton(new ExpirationConfiguration { ExpirationMinutes = Configuration.GetValue<double>("CachingExpirationMinutes") });
 
             services.AddSingleton<ICachingService, CachingService>();
             services.AddScoped<IIPInfoProvider, IPInfoProvider>();
