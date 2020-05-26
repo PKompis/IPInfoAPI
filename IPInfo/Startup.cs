@@ -1,4 +1,6 @@
+using IPInfo.Core;
 using IPInfo.Core.Services;
+using IPInfo.Data;
 using IPInfo.Library;
 using IPInfo.Library.Configuration;
 using IPInfo.Library.Interfaces;
@@ -6,6 +8,7 @@ using IPInfo.Middlewares;
 using IPInfo.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,8 +31,13 @@ namespace IPInfo
         {
             services.AddControllers();
 
+
+            services.AddDbContext<IPInfoDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default"), x => x.MigrationsAssembly("IPInfo.Data")));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             services.AddSingleton(new IPProviderConfiguration { APIRootUrl = Configuration.GetValue<string>("IPAPIRootUrl"), APIKey = Configuration.GetValue<string>("IPAPIKey") });
             services.AddSingleton(new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(Configuration.GetValue<double>("CachingExpirationMinutes")) });
+
             services.AddSingleton<ICachingService, CachingService>();
             services.AddScoped<IIPInfoProvider, IPInfoProvider>();
             services.AddScoped<IIPService, IPService>();

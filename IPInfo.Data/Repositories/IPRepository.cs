@@ -1,6 +1,6 @@
 ﻿using IPInfo.Core.Models;
 using IPInfo.Core.Repositories;
-using System;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace IPInfo.Data.Repositories
@@ -10,9 +10,10 @@ namespace IPInfo.Data.Repositories
         public IPRepository(IPInfoDbContext context) : base(context) { }
 
 
-        public async Task<IP> GetIPDetails(string ip)
+        public async Task<IP> GetIPDetailsAsync(string ip)
         {
-            throw new NotImplementedException();
+            return await IPInfoDbContext.IPDetails
+                .SingleOrDefaultAsync(i => i.Ip == ip);
         }
 
         private IPInfoDbContext IPInfoDbContext

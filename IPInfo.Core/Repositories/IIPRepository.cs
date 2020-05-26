@@ -5,6 +5,6 @@ namespace IPInfo.Core.Repositories
 {
     public interface IIPRepository : IRepository<IP>
     {
-        Task<IP> GetIPDetails(string ip);
+        Task<IP> GetIPDetailsAsync(string ip);
     }
 }
