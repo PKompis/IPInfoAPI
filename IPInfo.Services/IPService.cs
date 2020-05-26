@@ -68,7 +68,7 @@ namespace IPInfo.Services
         [AutomaticRetry(Attempts = 1)]
         public async Task PostIpDetailsList(IEnumerable<IPFullDetails> ipDetailsList, Guid trackingGuid)
         {
-            var ipList = _unitOfWork.IP.GetNonExistingIPs(ipDetailsList?.ToIpDomainModelList())?.ToList();
+            var ipList = _unitOfWork.IP.GetNonExistingIPs(ipDetailsList?.ToDistinctIpDomainModelList())?.ToList();
 
             var cacheExpirationMinutes = DateTimeOffset.Now.AddMinutes(1440);
 

@@ -31,6 +31,7 @@ namespace IPInfo.Data.Repositories
 
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
+            Context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             await Context.Set<TEntity>().AddRangeAsync(entities);
         }
 

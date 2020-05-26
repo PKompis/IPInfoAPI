@@ -24,9 +24,19 @@ namespace IPInfo.Services
             TotalItems = totalItems
         };
 
-        internal static IEnumerable<IP> ToIpDomainModelList(this IEnumerable<IPFullDetails> ipDetailsList) => ipDetailsList?.ToList().ConvertAll(ToIpDomainModel);
+        internal static IEnumerable<IP> ToDistinctIpDomainModelList(this IEnumerable<IPFullDetails> ipDetailsList)
+        {
+            var listToReturn = new List<IP>();
 
-        internal static IP ToIpDomainModel(IPFullDetails ipDetails) => new IP
+            foreach (var item in ipDetailsList)
+            {
+                if (listToReturn?.Any(x => x.Ip == item.Ip) == false) listToReturn.Add(item.ToIpDomainModel());
+            }
+
+            return listToReturn;
+        }
+
+        internal static IP ToIpDomainModel(this IPFullDetails ipDetails) => new IP
         {
             Ip = ipDetails.Ip,
             City = ipDetails.City,
