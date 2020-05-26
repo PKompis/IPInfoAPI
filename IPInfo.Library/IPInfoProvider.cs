@@ -36,7 +36,7 @@ namespace IPInfo.Library
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger?.Error(ex, ex.Message);
                 throw new IPServiceNotAvailableException(_serviceUnavailable, ex);
             }
         }
