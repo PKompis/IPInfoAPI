@@ -1,4 +1,5 @@
-﻿using IPInfo.Core.Exceptions;
+﻿using IPInfo.Core;
+using IPInfo.Core.Exceptions;
 using IPInfo.Core.Services;
 using IPInfo.Library.Interfaces;
 using System.Threading.Tasks;
@@ -9,13 +10,15 @@ namespace IPInfo.Services
     {
         private readonly IIPInfoProvider _ipInfoProvider;
         private readonly ICachingService _cachingService;
+        private readonly IUnitOfWork _unitOfWork;
 
         private const string NotValidIPException = "IP Address is not Valid";
 
-        public IPService(IIPInfoProvider iPInfoProvider, ICachingService cachingService)
+        public IPService(IIPInfoProvider iPInfoProvider, ICachingService cachingService, IUnitOfWork unitOfWork)
         {
             _ipInfoProvider = iPInfoProvider;
             _cachingService = cachingService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IPDetails> GetIPDetails(string ip)
@@ -24,14 +27,24 @@ namespace IPInfo.Services
 
             if (_cachingService.Contains(ip))
             {
-                var ipDetails = _cachingService.Get<IPDetails>(ip);
-                return ipDetails ?? _ipInfoProvider.GetIPDetails(ip);
+                var result = _cachingService.Get<IPDetails>(ip);
+                if (result != null) return result;
             }
 
-            var value = _ipInfoProvider.GetIPDetails(ip);
-            _cachingService.Add(ip, value);
+            var dbIpDetails = await _unitOfWork.IP.GetIPDetailsAsync(ip);
+            if (dbIpDetails != null)
+            {
+                _cachingService.Add(ip, (IPDetails)dbIpDetails);
+                return dbIpDetails;
+            }
 
-            return value;
+            var ipDetails = _ipInfoProvider.GetIPDetails(ip);
+            await _unitOfWork.IP.AddAsync(ipDetails?.ToDbIpDetails(ip));
+            await _unitOfWork.CommitAsync();
+
+            _cachingService.Add(ip, ipDetails);
+
+            return ipDetails;
         }
 
     }
