@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>IPInfo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+    <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IPInfo.Core\IPInfo.Core.csproj" />
+    <ProjectReference Include="..\IPInfo.Data\IPInfo.Data.csproj" />
+    <ProjectReference Include="..\IPInfo.Services\IPInfo.Services.csproj" />
+  </ItemGroup>
+
+</Project>
