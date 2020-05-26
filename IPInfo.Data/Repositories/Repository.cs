@@ -16,6 +16,14 @@ namespace IPInfo.Data.Repositories
         {
             Context = context;
         }
+
+        public void Update(TEntity entity)
+        {
+            Context.Set<TEntity>().Local.ToList().ForEach(x => Context.Entry(x).State = EntityState.Detached);
+
+            Context.Set<TEntity>().Update(entity);
+        }
+
         public async Task AddAsync(TEntity entity)
         {
             await Context.Set<TEntity>().AddAsync(entity);
@@ -24,6 +32,11 @@ namespace IPInfo.Data.Repositories
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await Context.Set<TEntity>().AddRangeAsync(entities);
+        }
+
+        public void UpdateRange(IEnumerable<TEntity> entities)
+        {
+            Context.Set<TEntity>().UpdateRange(entities);
         }
 
         public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)

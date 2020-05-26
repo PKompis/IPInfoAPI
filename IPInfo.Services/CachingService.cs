@@ -1,4 +1,5 @@
 ﻿using IPInfo.Core.Services;
+using System;
 using System.Runtime.Caching;
 
 namespace IPInfo.Services
@@ -14,14 +15,23 @@ namespace IPInfo.Services
             _cache = new MemoryCache("IPInfoAPI");
         }
 
-        public bool Add<T>(string key, T value)
+        public bool Add<T>(string key, T value, DateTimeOffset? expiration = null)
         {
-            return _cache.Add(new CacheItem(key, value), _cacheItemPolicy);
+            CacheItemPolicy cacheItemPolicy = null;
+
+            if (expiration != null) cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = expiration.Value };
+
+            return _cache.Add(new CacheItem(key, value), cacheItemPolicy ?? _cacheItemPolicy);
         }
 
         public bool Contains(string key)
         {
             return _cache.Contains(key);
+        }
+
+        public bool Remove(string key)
+        {
+            return _cache.Remove(key) != null;
         }
 
         public T Get<T>(string key)

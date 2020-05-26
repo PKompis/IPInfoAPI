@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Hangfire;
+using Hangfire.SqlServer;
 using System;
 using System.Runtime.Caching;
 
@@ -29,8 +31,9 @@ namespace IPInfo
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            AddHangfire(services);
 
+            services.AddControllers();
 
             services.AddDbContext<IPInfoDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default"), x => x.MigrationsAssembly("IPInfo.Data")));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -48,7 +51,7 @@ namespace IPInfo
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IBackgroundJobClient backgroundJobs, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -65,6 +68,8 @@ namespace IPInfo
 
             app.UseRouting();
 
+            app.UseHangfireDashboard();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -77,6 +82,25 @@ namespace IPInfo
                 c.RoutePrefix = "";
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My IP Info API v1");
             });
+        }
+
+        private void AddHangfire(IServiceCollection services)
+        {
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(Configuration.GetConnectionString("Default"), new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    UsePageLocksOnDequeue = true,
+                    DisableGlobalLocks = true
+                }));
+
+            services.AddHangfireServer();
         }
     }
 }
