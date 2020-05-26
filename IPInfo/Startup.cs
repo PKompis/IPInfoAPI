@@ -1,6 +1,6 @@
 using IPInfo.Core.Services;
+using IPInfo.Library;
 using IPInfo.Library.Configuration;
-using IPInfo.Library.Implementation;
 using IPInfo.Library.Interfaces;
 using IPInfo.Middlewares;
 using IPInfo.Services;
@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System;
+using System.Runtime.Caching;
 
 namespace IPInfo
 {
@@ -27,6 +29,8 @@ namespace IPInfo
             services.AddControllers();
 
             services.AddSingleton(new IPProviderConfiguration { APIRootUrl = Configuration.GetValue<string>("IPAPIRootUrl"), APIKey = Configuration.GetValue<string>("IPAPIKey") });
+            services.AddSingleton(new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(Configuration.GetValue<double>("CachingExpirationMinutes")) });
+            services.AddSingleton<ICachingService, CachingService>();
             services.AddScoped<IIPInfoProvider, IPInfoProvider>();
             services.AddScoped<IIPService, IPService>();
 

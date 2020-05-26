@@ -7,7 +7,7 @@ using System;
 using IPInfo.Library.Configuration;
 using Newtonsoft.Json;
 
-namespace IPInfo.Library.Implementation
+namespace IPInfo.Library
 {
     public class IPInfoProvider : IIPInfoProvider
     {
